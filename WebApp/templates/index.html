@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accident Risk Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h2>AeroSense</h2>
+            </div>
+            <p class="tagline">Multimodal Traffic Intelligence</p>
+            <ul class="nav-links">
+                <li class="active">Risk Predictor</li>
+                <li>Blackspot Analytics</li>
+                <li>Live CCTV Stream</li>
+                <li>Generate PDF Report</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <h1>Real-Time Accident Risk Assessor</h1>
+                <p>Input current environmental and road conditions to instantly predict collision severity using our trained Random Forest Model.</p>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Input Form -->
+                <div class="card form-card">
+                    <h3>Simulation Parameters</h3>
+                    <form id="prediction-form">
+                        <div class="form-section">
+                            <h4>Environmental Conditions</h4>
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label for="Day_of_Week">Day of Week</label>
+                                    <select id="Day_of_Week" name="Day_of_Week">
+                                        <option value="2">Monday</option>
+                                        <option value="3">Tuesday</option>
+                                        <option value="4">Wednesday</option>
+                                        <option value="5">Thursday</option>
+                                        <option value="6">Friday</option>
+                                        <option value="7">Saturday</option>
+                                        <option value="1">Sunday</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="Weather_Conditions">Weather</label>
+                                    <select id="Weather_Conditions" name="Weather_Conditions">
+                                        <option value="1">Fine no high winds</option>
+                                        <option value="2">Raining no high winds</option>
+                                        <option value="3">Snowing no high winds</option>
+                                        <option value="4">Fine + high winds</option>
+                                        <option value="5">Raining + high winds</option>
+                                        <option value="6">Snowing + high winds</option>
+                                        <option value="7">Fog or mist</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="Light_Conditions">Light Conditions</label>
+                                    <select id="Light_Conditions" name="Light_Conditions">
+                                        <option value="1">Daylight</option>
+                                        <option value="4">Darkness: lit</option>
+                                        <option value="5">Darkness: unlit</option>
+                                        <option value="6">Darkness: unknown lit</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Road Dynamics</h4>
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label for="1st_Road_Number">Road Number (ID)</label>
+                                    <input type="number" id="1st_Road_Number" name="1st_Road_Number" value="101" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="Speed_limit">Speed Limit (km/h)</label>
+                                    <input type="number" id="Speed_limit" name="Speed_limit" value="40" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="Road_Surface_Conditions">Surface Condition</label>
+                                    <select id="Road_Surface_Conditions" name="Road_Surface_Conditions">
+                                        <option value="1">Dry</option>
+                                        <option value="2">Wet or damp</option>
+                                        <option value="3">Snow</option>
+                                        <option value="4">Frost or ice</option>
+                                        <option value="5">Flood over 3cm</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="Urban_or_Rural_Area">Area Type</label>
+                                    <select id="Urban_or_Rural_Area" name="Urban_or_Rural_Area">
+                                        <option value="1">Urban</option>
+                                        <option value="2">Rural</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4>Incident Variables</h4>
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label for="Number_of_Vehicles">Number of Vehicles</label>
+                                    <input type="number" id="Number_of_Vehicles" name="Number_of_Vehicles" value="2" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="Number_of_Casualties">Estimated Casualties</label>
+                                    <input type="number" id="Number_of_Casualties" name="Number_of_Casualties" value="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden defaults for less important features to keep UI clean -->
+                        <input type="hidden" name="1st_Road_Class" value="3">
+                        <input type="hidden" name="Road_Type" value="6">
+                        <input type="hidden" name="Junction_Detail" value="0">
+                        <input type="hidden" name="Junction_Control" value="-1">
+                        <input type="hidden" name="Special_Conditions_at_Site" value="0">
+                        <input type="hidden" name="Carriageway_Hazards" value="0">
+
+                        <button type="submit" class="btn-submit">
+                            <span>Analyze Risk</span>
+                            <div class="spinner" id="btn-spinner" style="display: none;"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Results Card -->
+                <div class="card result-card" id="result-container">
+                    <div class="empty-state" id="empty-state">
+                        <div class="icon-pulse"></div>
+                        <p>Waiting for simulation data...</p>
+                    </div>
+                    
+                    <div class="prediction-content" id="prediction-content" style="display: none;">
+                        <h3>Analysis Results</h3>
+                        
+                        <div class="severity-box" id="severity-box">
+                            <span class="label">Predicted Severity</span>
+                            <h2 id="severity-value">Slight</h2>
+                        </div>
+
+                        <div class="blackspot-alert" id="blackspot-alert" style="display: none;">
+                            <div class="alert-icon">⚠️</div>
+                            <div class="alert-text">
+                                <strong>High Risk Blackspot Detected</strong>
+                                <p>This road number has a history of >400 accidents.</p>
+                            </div>
+                        </div>
+
+                        <div class="insights">
+                            <p><strong>Model Used:</strong> Random Forest Classifier</p>
+                            <p><strong>Action:</strong> <span id="action-recommendation">Routine monitoring advised.</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
